@@ -1,0 +1,27 @@
+rm(list=ls())
+
+x1 = c("man","woman","man","woman")
+x2 = c("yes","yes","no","no")
+df = data.frame(cbind(x1,x2))
+x3 = c(435,375,147,134)
+df = data.frame(df,x3)
+
+fit = glm(x3~x1+x2, family = "poisson", data=df)
+summary(fit)
+############### interactive ###################
+int.fit = glm(x3~x1+x2+x1*x2, family = "poisson", data=df)
+summary(int.fit)
+################ 3*3 ##########################
+Drugs = read.table("http://www.stat.ufl.edu/~aa/cat/data/Substance.dat",header=T)
+Drugs
+
+A = Drugs$alcohol
+C = Drugs$cigarettes
+M = Drugs$marijuana
+
+fit3 = glm(count~A+C+M, family="poisson", data=Drugs)
+summary(fit3)
+
+fit4 = glm(count~A+C+M+A*C+A*M+C*M, family="poisson", data=Drugs)
+fit5 = glm(count~A+C+M+A*M+C*M, family="poisson", data=Drugs)
+data.frame(A,C,M,Drugs$count,fitted(fit4),fitted(fit5))
