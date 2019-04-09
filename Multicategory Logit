@@ -1,0 +1,50 @@
+install.packages("VGAM")
+library(VGAM)
+###########baseline-category logit######################
+##1
+Gators = read.table("http://www.stat.ufl.edu/~aa/cat/data/Alligators.dat",
+                    header=T)
+fit1 = vglm(y~x,family=multinomial,data=Gators)
+summary(fit1)
+
+fitted(fit1)
+
+plot(Gators$x,fitted(fit1)[,1],type="l",ylim = c(0,1))
+lines(Gators$x,fitted(fit1)[,2])
+lines(Gators$x,fitted(fit1)[,3])
+#refLevel
+fit2 = vglm(y~x,family=multinomial(refLevel="I"),data=Gators)
+summary(fit2)
+
+##2
+Afterlife = read.table("http://www.stat.ufl.edu/~aa/cat/data/Afterlife.dat",
+                       header=T)
+fit3 = vglm(cbind(yes,undecided,no)~race+gender,family=multinomial,
+            data=Afterlife)
+summary(fit3)
+fitted(fit3)
+
+#####################cumulative logit######################
+Polviews = read.table("http://www.stat.ufl.edu/~aa/cat/data/Polviews.dat",
+                      header=T)
+fit4 = vglm(cbind(y1,y2,y3,y4,y5)~party+gender,
+            family=cumulative(parallel=T),data=Polviews)
+summary(fit4)
+fitted(fit4)
+
+####################Adjacent-Categories Logits############
+fit5 = vglm(cbind(y1,y2,y3,y4,y5)~party+gender,
+            family=acat(parallel=T,reverse = T),data=Polviews)
+summary(fit5)
+fitted(fit5)
+
+####################Sequential Logits#################### 
+x1 = c("yes","no")
+x2 = matrix(c(19,29,24,497,560,269),2,3,byrow=T)
+Tonsils = data.frame(x1,x2)
+colnames(Tonsils) = c("carrier","y1","y2","y3")
+
+fit6 = vglm(cbind(y1,y2,y3)~carrier,family=sratio(parallel=T),
+            data=Tonsils)
+summary(fit6)
+fitted(fit6)
