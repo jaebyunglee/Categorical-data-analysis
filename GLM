@@ -1,0 +1,40 @@
+library(MASS)
+library(gam)
+################logistic regression#############################################
+mydata = read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+head(mydata)
+str(mydata)
+train = mydata[1:200,]
+test = mydata[201:400,]
+fit.glm.bin = glm(admit~gre+gpa+factor(rank),data=train,family="binomial")
+summary(fit.glm.bin)
+hy.vec = predict(fit.glm.bin,train[,-1],type = "response")
+hy.vec = ifelse(hy.vec>0.5,1,0)
+t = table(train$admit,hy.vec)
+1-sum(diag(t))/sum(t)
+
+#################poisson regression###############################################
+data = read.table("http://www.stat.ufl.edu/~aa/cat/data/Crabs.dat",
+                  header=T)
+
+plot(sat~width,data)
+fit.blm.poi = glm(data$sat~data$width,family=poisson(link=log))
+summary(fit.blm.poi)
+
+gam.fit = gam(sat~s(width),family="poisson",data)
+curve(predict(gam.fit,data.frame(width=x),type="resp"),add=T)
+
+################poisson regression for Rate data##################################
+z = seq(2003,1975,-1)
+c = c(3,3,4,3,2,4,1,2,2,4,4,4,6,2,4,4,6,13,5,3,7,3,2,2,3,4,8,12,2)
+v = c(518,516,508,503,505,487,463,437,423,415,425,430,439,431,436,443,397,414,418,389,401,372,417,430,426,430,425,426,436)
+Rate.data = data.frame(z,v,c)
+names(Rate.data) = c("year","Frequancy","count")
+Rate.data$y1975 = Rate.data$year-1975
+glm(count~y1975+offset(log(Frequancy)),family = poisson,Rate.data)
+
+###############negative binomial regression#######################################
+fit.glm.nb = glm.nb(data$sat~data$width)
+?glm
+
+
