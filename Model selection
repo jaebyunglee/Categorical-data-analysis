@@ -1,0 +1,74 @@
+rm(list=ls())
+library(car)
+library(MASS) #lda,qda
+library(biotools) #boxM
+library(klaR) #sknn
+library(class) #knn
+library(kernlab) #ksvm
+library(ROCR) #ROC
+library(Epi) # ROC
+library(e1071) #SVM
+###########5.1.2-Example
+Crabs = read.table("http://www.stat.ufl.edu/~aa/cat/data/Crabs.dat",header=T)
+fit1 = glm(y~weight+width+factor(color)+factor(spine),family=binomial,data=Crabs)
+summary(fit1)
+1 - pchisq(225.76-185.2,172-165) #pvalue
+
+fit2 = glm(y~weight,family=binomial,data=Crabs)
+summary(fit2)
+#step
+full = glm(y~weight+width+factor(color)+factor(spine),family=binomial,data=Crabs)
+null = glm(y~1,family=binomial,data=Crabs)
+step(full,direction = "both")
+
+##########5.1.6-Classification table
+fit3 = glm(Crabs$y~Crabs$weight,family=binomial)
+newx=as.data.frame(Crabs$weight)
+true.y = Crabs$y
+prob.y = predict(fit3,newdata = newx,type="response")
+hat.y = ifelse(prob.y>=0.5,1,0)
+table(true.y,hat.y)
+sum(diag(table(true.y,hat.y)))/sum(table(true.y,hat.y))
+
+##############correct classify###################
+prop = sum(Crabs$y)/nrow(Crabs)
+fit4 = glm(y~width+factor(color),family=binomial,data=Crabs)
+#pi_0 = 0.64
+predicted = as.numeric(fitted(fit4)>prop)
+classify.table = xtabs(~Crabs$y+predicted)
+sum(diag(classify.table))/sum(classify.table)
+#pi_0 = 0.5
+predicted = as.numeric(fitted(fit4)>0.5)
+classify.table = xtabs(~Crabs$y+predicted)
+sum(diag(classify.table))/sum(classify.table)
+
+################ROC##############################
+fit5 = glm(y~width+factor(color),family=binomial,data=Crabs)
+p = predict(fit5,type="response")
+pr = prediction(p,Crabs$y)
+prf = performance(pr,measure = "tpr", x.measure="fpr")
+ROC(test = p, stat = Crabs$y,plot = "ROC" , main = "logistic")
+
+##############Multiple Correlation##############
+fit6 = glm(y~width + factor(color),family=binomial,data=Crabs)
+cor(Crabs$y,fitted(fit6))
+
+####################Compare models using AUC#######################
+#model1
+fit5 = glm(y~width+factor(color),family=binomial,data=Crabs)
+p = predict(fit5,type="response")
+pr = prediction(p,Crabs$y)
+prf = performance(pr,measure = "tpr", x.measure="fpr")
+ROC(test = p, stat = Crabs$y,plot = "ROC" , main = "logistic")
+#model2
+fit7 = glm(y~width+weight+factor(color),family=binomial,data=Crabs)
+p = predict(fit7,type="response")
+pr = prediction(p,Crabs$y)
+prf = performance(pr,measure = "tpr",x.measure = "fpr")
+ROC(test = p, stat = Crabs$y,plot="ROC",main="logistic")
+#model3
+fit8 = glm(y~width+weight+factor(color)+factor(spine),family=binomial,data=Crabs)
+p = predict(fit8,type="response")
+pr = prediction(p,Crabs$y)
+prf = performance(pr,measure = "tpr",x.measure = "fpr")
+ROC(test = p, stat = Crabs$y,plot="ROC",main="logistic")
